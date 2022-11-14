@@ -1,4 +1,4 @@
-import java.io.IOException;
+import java.io.*;
 import java.util.*;
 
 public class HashMapTest {
@@ -21,7 +21,9 @@ public class HashMapTest {
                         listProduct(produtos);
                         System.in.read();
                     }
-                    case 5 -> {
+                    case 5 -> saveMap(produtos);
+                    case 6 -> loadMap(produtos);
+                    case 7 -> {
                         sc.close();
                         return 0;
                     }
@@ -30,8 +32,35 @@ public class HashMapTest {
             }
             catch (IllegalStateException e){
                 System.out.println("OutOfControll");
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
             }
         }
+    }
+
+    private void loadMap(HashMap<Integer,Product> p) throws IOException, ClassNotFoundException {
+        FileInputStream map = new FileInputStream("src/map.dat");
+        BufferedInputStream buff = new BufferedInputStream(map);
+        ObjectInputStream oos = new ObjectInputStream(buff);
+        try {
+            for (; ; ) {
+                p.put(oos.readInt(), new Product(oos.readUTF(), oos.readDouble()));
+            }
+        }catch (EOFException e){
+            return;
+        }
+    }
+
+    private void saveMap(HashMap<Integer, Product> p) throws IOException {
+        FileOutputStream map = new FileOutputStream("src/map.dat");
+        BufferedOutputStream buffered = new BufferedOutputStream(map);
+        ObjectOutputStream oos = new ObjectOutputStream(buffered);
+        for(Map.Entry<Integer, Product> entry : p.entrySet()){
+            oos.writeInt(entry.getKey());
+            oos.writeUTF(entry.getValue().getName());
+            oos.writeDouble(entry.getValue().getPrice());
+        }
+        oos.flush();
     }
 
     private int choiceMenu() {
@@ -46,7 +75,9 @@ public class HashMapTest {
         System.out.println("2 - Modificar");
         System.out.println("3 - Remover");
         System.out.println("4 - Listar");
-        System.out.println("5 - Sair");
+        System.out.println("5 - Salvar");
+        System.out.println("6 - Carregar");
+        System.out.println("7 - Sair");
     }
 
     public void removeProduct(HashMap<Integer, Product> p, Scanner sc) throws IOException, InterruptedException {
